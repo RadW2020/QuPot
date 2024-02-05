@@ -1,0 +1,198 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:14
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_MULTIPLE_DATABASES=lottery,auth_service
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres:/docker-entrypoint-initdb.d
+    networks:
+      - qupot-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  auth-service:
+    image: node:18
+    ports:
+      - "8001:8001"
+      - "9229:9229"
+    environment:
+      - PORT=8001
+      - NODE_ENV=development
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=auth_service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - qupot-network
+    volumes:
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+      - ./apps/auth-service:/app/apps/auth-service
+      - ./packages:/app/packages
+      - /app/node_modules
+      - /app/apps/auth-service/node_modules
+    working_dir: /app
+    command: >
+      sh -c "npm install &&
+             cd apps/auth-service && 
+             npm install &&
+             npm rebuild bcrypt &&
+             npm run dev"
+    profiles:
+      - auth
+
+  lottery-service:
+    image: node:18
+    ports:
+      - "8003:8003"
+      - "9230:9229"
+    environment:
+      - PORT=8003
+      - NODE_ENV=development
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=lottery_service
+      - BLOCKCHAIN_SERVICE_URL=http://blockchain-service:8004
+    depends_on:
+      postgres:
+        condition: service_healthy
+      blockchain-service:
+        condition: service_started
+    networks:
+      - qupot-network
+    volumes:
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+      - ./apps/lottery-service:/app/apps/lottery-service
+      - ./packages:/app/packages
+      - /app/node_modules
+      - /app/apps/lottery-service/node_modules
+    working_dir: /app
+    command: >
+      sh -c "npm install &&
+             cd apps/lottery-service && 
+             npm install &&
+             npm run dev"
+    profiles:
+      - lottery
+
+  quantum-service:
+    build:
+      context: ./apps/quantum-service
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8002"
+      - "9232:9229"
+    environment:
+      - PORT=8002
+      - ENVIRONMENT=development
+    networks:
+      - qupot-network
+    volumes:
+      - ./apps/quantum-service:/app/apps/quantum-service
+      - ./packages:/app/packages
+      - quantum_venv:/usr/local/lib/python3.11/site-packages
+    working_dir: /app/apps/quantum-service
+    profiles:
+      - quantum
+
+  blockchain-service:
+    image: node:18
+    ports:
+      - "8004:8004"
+      - "9233:9229"
+    environment:
+      - PORT=8004
+      - NODE_ENV=development
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=blockchain_service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - qupot-network
+    volumes:
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+      - ./apps/blockchain-service:/app/apps/blockchain-service
+      - ./packages:/app/packages
+      - /app/node_modules
+      - /app/apps/blockchain-service/node_modules
+    working_dir: /app
+    command: >
+      sh -c "npm install &&
+             cd apps/blockchain-service && 
+             npm install &&
+             npm run dev"
+    profiles:
+      - blockchain
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: apps/api-gateway/Dockerfile
+    ports:
+      - "8000:8000"
+      - "9228:9229"
+    environment:
+      - NODE_ENV=development
+      - PORT=8000
+      - AUTH_SERVICE_URL=http://auth-service:8001
+      - LOTTERY_SERVICE_URL=http://lottery-service:8003
+      - QUANTUM_SERVICE_URL=http://quantum-service:8002
+      - BLOCKCHAIN_SERVICE_URL=http://blockchain-service:8004
+    volumes:
+      - ./apps/api-gateway:/app/apps/api-gateway
+      - ./packages:/app/packagess
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+      - /app/node_modules
+      - /app/apps/api-gateway/node_modules
+    networks:
+      - qupot-network
+    depends_on:
+      - auth-service
+      - lottery-service
+      - quantum-service
+      - blockchain-service
+    working_dir: /app
+    command: >
+      sh -c "npm install &&
+             cd apps/api-gateway && 
+             npm install &&
+             npm run dev"
+    profiles:
+      - gateway
+
+networks:
+  qupot-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  node_modules_api_gateway:
+  node_modules_lottery_service:
+  node_modules_blockchain_service:
+  node_modules_auth_service:
+  quantum_venv:
+  api_gateway_node_modules:
+  api_gateway_app_node_modules:
