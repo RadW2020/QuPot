@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QuPot Quantum Random Number Generator</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      header {
+        background: linear-gradient(135deg, #6e8efb, #a777e3);
+        color: white;
+        padding: 2rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        text-align: center;
+      }
+      h1 {
+        margin: 0;
+        font-size: 2.5rem;
+      }
+      h2 {
+        border-bottom: 2px solid #eee;
+        padding-bottom: 10px;
+        margin-top: 2rem;
+      }
+      pre {
+        background-color: #f5f5f5;
+        padding: 15px;
+        border-radius: 5px;
+        overflow-x: auto;
+      }
+      code {
+        font-family: "Courier New", Courier, monospace;
+        background-color: #f5f5f5;
+        padding: 2px 4px;
+        border-radius: 4px;
+      }
+      .endpoint {
+        background-color: #f9f9f9;
+        border-left: 4px solid #a777e3;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 0 5px 5px 0;
+      }
+      .method {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-weight: bold;
+        margin-right: 10px;
+      }
+      .get {
+        background-color: #61affe;
+        color: white;
+      }
+      .post {
+        background-color: #49cc90;
+        color: white;
+      }
+      .image-container {
+        display: flex;
+        justify-content: center;
+        margin: 2rem 0;
+      }
+      .image-container img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 5px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      .two-col {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+      }
+      .two-col > div {
+        flex: 1;
+        min-width: 300px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+      }
+      th,
+      td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+      th {
+        background-color: #f5f5f5;
+      }
+      .btn {
+        display: inline-block;
+        background-color: #a777e3;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 4px;
+        text-decoration: none;
+        margin-top: 10px;
+      }
+      .btn:hover {
+        background-color: #956dd1;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>QuPot Quantum Random Number Generator</h1>
+      <p>Truly random numbers powered by quantum computing principles</p>
+    </header>
+
+    <section>
+      <h2>Overview</h2>
+      <p>
+        This service provides truly random numbers generated using quantum
+        computing principles. The randomness is derived from quantum
+        superposition and measurement, which according to quantum mechanics,
+        produces genuinely random outcomes - not just pseudorandom numbers like
+        classical algorithms.
+      </p>
+      <div class="image-container">
+        <img
+          src="/static/quantum_circuit_single_bit.png"
+          alt="Quantum Circuit for Random Bit Generation"
+        />
+      </div>
+    </section>
+
+    <section>
+      <h2>API Endpoints</h2>
+
+      <div class="endpoint">
+        <h3><span class="method post">POST</span> /api/v1/random</h3>
+        <p>Generate quantum random numbers within a specified range.</p>
+
+        <h4>Request</h4>
+        <pre><code>{
+  "min_value": 1,
+  "max_value": 90,
+  "count": 6,
+  "unique": true
+}</code></pre>
+
+        <table>
+          <tr>
+            <th>Parameter</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Default</th>
+          </tr>
+          <tr>
+            <td>min_value</td>
+            <td>integer</td>
+            <td>Minimum value (inclusive)</td>
+            <td>1</td>
+          </tr>
+          <tr>
+            <td>max_value</td>
+            <td>integer</td>
+            <td>Maximum value (inclusive)</td>
+            <td>100</td>
+          </tr>
+          <tr>
+            <td>count</td>
+            <td>integer</td>
+            <td>Number of random numbers to generate</td>
+            <td>1</td>
+          </tr>
+          <tr>
+            <td>unique</td>
+            <td>boolean</td>
+            <td>Whether numbers should be unique</td>
+            <td>true</td>
+          </tr>
+        </table>
+
+        <h4>Response</h4>
+        <pre><code>{
+  "numbers": [23, 45, 12, 67, 89, 34],
+  "source": "quantum_simulator",
+  "timestamp": "2025-03-15T12:34:56.789012",
+  "request_id": "550e8400-e29b-41d4-a716-446655440000"
+}</code></pre>
+      </div>
+
+      <div class="endpoint">
+        <h3><span class="method get">GET</span> /api/v1/quantum-circuit</h3>
+        <p>
+          Get information about the quantum circuit used for random number
+          generation.
+        </p>
+
+        <h4>Response</h4>
+        <pre><code>{
+  "circuit_description": "Hadamard gate followed by measurement",
+  "circuit_qubits": 1,
+  "circuit_depth": 2,
+  "measurement_counts": {"0": 500, "1": 500},
+  "explanation": "This quantum circuit places a qubit in superposition using a Hadamard gate, creating an equal probability of measuring 0 or 1. The measurement then collapses the superposition, providing a truly random bit."
+}</code></pre>
+      </div>
+    </section>
+
+    <section>
+      <h2>Quantum Theory Behind the Random Number Generator</h2>
+
+      <div class="two-col">
+        <div>
+          <h3>Single Bit Generation</h3>
+          <p>
+            We use a quantum circuit with a Hadamard gate to place a qubit in
+            superposition, creating an equal probability of measuring either 0
+            or 1. When measured, the quantum state collapses, giving us a truly
+            random bit.
+          </p>
+          <div class="image-container">
+            <img
+              src="/static/quantum_distribution_single_bit.png"
+              alt="Distribution of Quantum Measurements"
+            />
+          </div>
+        </div>
+
+        <div>
+          <h3>Multi-Bit Generation</h3>
+          <p>
+            For generating larger random numbers, we use multiple qubits in
+            superposition. This allows us to generate the required number of
+            random bits to compose numbers within the requested range.
+          </p>
+          <div class="image-container">
+            <img
+              src="/static/quantum_circuit_multi_bit.png"
+              alt="Multi-Bit Quantum Circuit"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Try It Out</h2>
+      <p>
+        You can test the API directly using the interactive API documentation:
+      </p>
+      <a href="/docs" class="btn">OpenAPI Documentation</a>
+    </section>
+
+    <footer
+      style="
+        margin-top: 3rem;
+        padding-top: 1rem;
+        border-top: 1px solid #eee;
+        text-align: center;
+      "
+    >
+      <p>© 2025 QuPot - Quantum Lottery Platform</p>
+    </footer>
+  </body>
+</html>
