@@ -4,21 +4,21 @@ This guide explains how to set up and run the QuPot Quantum Lottery Platform ser
 
 ## Project Overview
 
-QuPot is a microservices-based quantum lottery platform with the following components:
+QuPot is a microservices-based quantum lottery platform that uses quantum random number generation for provably fair lottery draws. The platform consists of the following components:
 
-- **Quantum Service** (Python/FastAPI): Generates quantum random numbers
-- **Lottery Service** (NestJS): Manages lottery draws and tickets
-- **Blockchain Service** (NestJS/Hardhat): Handles blockchain and smart contract operations
-- **Auth Service** (NestJS): Manages authentication and authorization
+- **Quantum Service** (Python/FastAPI): Generates quantum random numbers using Qiskit
+- **Lottery Service** (NestJS): Manages lottery draws, tickets, and results
+- **Blockchain Service** (NestJS/Hardhat): Handles blockchain interactions and smart contract operations
+- **Auth Service** (NestJS): Manages user authentication and authorization
 - **API Gateway** (NestJS): Routes requests to appropriate services
 
-The project uses Turborepo for monorepo management.
+The project uses Turborepo for monorepo management and dependency orchestration.
 
 ## Prerequisites
 
 - **Node.js v18+** and npm
 - **Python 3.8+** for the quantum service
-- **Docker** and Docker Compose (for containerized development)
+- **Docker** and Docker Compose (optional, for containerized development)
 
 ## Getting Started
 
@@ -32,13 +32,19 @@ npm install
 
 2. Run the development environment:
 
-### Run all services
+### Run All Services
+
+To start all services in development mode:
 
 ```bash
 npm run dev
 ```
 
-### Run specific services
+This command uses Turborepo to run all services in parallel, respecting dependencies between them.
+
+### Run Specific Services
+
+To run only specific services:
 
 ```bash
 # Run just the quantum service
@@ -52,22 +58,33 @@ npm run dev -- --filter=quantum-service --filter=api-gateway
 
 ### Quantum Service
 
-The quantum service is a Python FastAPI application that generates quantum random numbers.
+The Quantum Service is a Python FastAPI application that generates random numbers using quantum computing principles.
 
 ```bash
-# Check environment and dependencies
+# Navigate to the quantum service directory
 cd apps/quantum-service
+
+# Check environment and dependencies
 npm run check-env
 
-# Run the quantum service
+# Run the quantum service in development mode
 npm run dev
 ```
 
-When running, the quantum service will be available at http://localhost:8002
+When running, the Quantum Service will be available at http://localhost:8002 with:
+- Interactive API documentation at http://localhost:8002/docs
+- Custom HTML documentation at http://localhost:8002/
+
+#### Key Quantum Service Files
+
+- `src/main.py`: Main FastAPI application with endpoints
+- `scripts/check_env.py`: Environment verification script
+- `client.py`: API testing client
+- `visualize_circuit.py`: Quantum circuit visualization generator
 
 ### API Gateway
 
-The API Gateway routes requests to the appropriate microservices.
+The API Gateway routes requests to the appropriate microservices and provides a unified API.
 
 ```bash
 cd apps/api-gateway
@@ -88,16 +105,55 @@ npm run docker:up
 npm run docker:down
 ```
 
-## Useful Commands
+Docker development is especially useful for:
+- Testing the entire system integration
+- Ensuring consistent environments across developer machines
+- Running services that require specific dependencies
+
+## Development Workflows
+
+### Adding a New Feature to Quantum Service
+
+1. Navigate to the quantum service directory:
+   ```bash
+   cd apps/quantum-service
+   ```
+
+2. Activate the virtual environment:
+   ```bash
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+3. Implement your feature in `src/main.py` or create new modules as needed
+
+4. Test your implementation:
+   ```bash
+   python client.py
+   ```
+
+5. Run the service to verify your changes:
+   ```bash
+   npm run dev
+   ```
+
+### Running Tests
+
+Each service has its own testing configuration:
 
 ```bash
-# Build all packages
-npm run build
-
-# Run tests
+# Run tests for all services
 npm run test
 
-# Run linting
+# Run tests for a specific service
+npm run test -- --filter=quantum-service
+```
+
+### Code Quality
+
+Maintain code quality with linting and formatting:
+
+```bash
+# Run linting for all services
 npm run lint
 
 # Format code
@@ -109,49 +165,99 @@ npm run format
 ```
 qupot/
 ├── apps/                 # Microservices
-│   ├── api-gateway/      # API Gateway service
-│   ├── quantum-service/  # Quantum random number service
-│   ├── lottery-service/  # Lottery management service
-│   ├── blockchain-service/ # Blockchain & smart contract service
-│   └── auth-service/     # Authentication service
+│   ├── api-gateway/      # API Gateway service (NestJS)
+│   ├── quantum-service/  # Quantum random number service (FastAPI/Python)
+│   │   ├── src/          # Service source code
+│   │   ├── scripts/      # Utility scripts
+│   │   └── venv/         # Python virtual environment (git-ignored)
+│   ├── lottery-service/  # Lottery management service (NestJS)
+│   ├── blockchain-service/ # Blockchain & smart contract service (NestJS/Solidity)
+│   └── auth-service/     # Authentication service (NestJS)
 ├── packages/             # Shared libraries
-│   └── common-lib/       # Common utilities & types
+│   └── common-lib/       # Common utilities & types (TypeScript)
 ├── docker/               # Docker configurations
 └── docker-compose.yml    # Docker Compose configuration
 ```
 
 ## Service Ports
 
-| Service | Port |
-|---------|------|
-| API Gateway | 3000 |
-| Quantum Service | 8002 |
-| Lottery Service | 3001 |
-| Blockchain Service | 3002 |
-| Auth Service | 3003 |
-| PostgreSQL | 5432 |
+| Service | Port | Technologies |
+|---------|------|--------------|
+| API Gateway | 3000 | NestJS |
+| Quantum Service | 8002 | FastAPI/Python/Qiskit |
+| Lottery Service | 3001 | NestJS/PostgreSQL |
+| Blockchain Service | 3002 | NestJS/Hardhat/Solidity |
+| Auth Service | 3003 | NestJS/JWT |
+| PostgreSQL | 5432 | PostgreSQL |
 
 ## Troubleshooting
 
-### Port conflicts
+### Port Conflicts
 
-If you encounter a "port already in use" error, you can change the port in the service's package.json file.
+If you encounter a "port already in use" error:
 
-### Python environment issues
+1. Check which process is using the port:
+   ```bash
+   # On macOS/Linux
+   lsof -i :<port>
+   
+   # On Windows
+   netstat -ano | findstr :<port>
+   ```
 
-For the quantum service, run the environment check to verify the Python setup:
+2. Either kill the existing process or change the port in the service's package.json file:
+   ```json
+   "dev": "if [ ! -d \"venv\" ]; then npm run setup; fi && . venv/bin/activate && uvicorn src.main:app --reload --host 0.0.0.0 --port 8002"
+   ```
+
+### Python Environment Issues
+
+For the Quantum Service, run the environment check to verify the Python setup:
 
 ```bash
 cd apps/quantum-service
 npm run check-env
 ```
 
-### Docker issues
+Common issues include:
+- Missing Python dependencies
+- Incorrect Python version
+- Virtual environment not activated
+
+### Docker Issues
 
 If you encounter Docker issues, try:
 
 ```bash
+# Stop and remove all containers
 npm run docker:down
+
+# Clean up Docker resources
 docker system prune -a
+
+# Restart services
 npm run docker:up
 ```
+
+### Handling Node.js Dependencies
+
+If you encounter Node.js dependency issues:
+
+```bash
+# Clean npm cache
+npm cache clean --force
+
+# Reinstall dependencies
+rm -rf node_modules
+npm install
+```
+
+## Additional Resources
+
+- [Quantum Service README](./apps/quantum-service/README.md): Detailed documentation for the Quantum Service
+- [SETUP_SUMMARY.md](./SETUP_SUMMARY.md): Summary of the current setup
+- [QUANTUM_CONCEPTS.md](./docs/QUANTUM_CONCEPTS.md): Explanation of quantum computing principles used
+- [FastAPI Documentation](https://fastapi.tiangolo.com/): Documentation for FastAPI
+- [Qiskit Documentation](https://qiskit.org/documentation/): Documentation for Qiskit
+- [IBM Quantum](https://quantum-computing.ibm.com/): IBM's quantum computing platform
+- [Turborepo Documentation](https://turbo.build/repo/docs): Documentation for Turborepo

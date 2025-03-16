@@ -1,22 +1,37 @@
 # Quantum Service for QuPot
 
-The Quantum Service is a FastAPI-based microservice that provides quantum random number generation for the QuPot Quantum Lottery Platform.
+The Quantum Service is a FastAPI-based microservice that provides quantum random number generation for the QuPot Quantum Lottery Platform. It uses quantum computing principles through Qiskit to deliver truly random numbers for lottery draws.
 
 ## Features
 
 - Generates truly random numbers using quantum computing principles
 - Uses Qiskit to simulate quantum circuits
 - Provides REST API for quantum random number generation
-- Offers information about the quantum circuits used
+- Offers information and visualization of the quantum circuits used
+- Includes comprehensive documentation and testing tools
 
 ## Installation
 
 ### Prerequisites
 
 - Python 3.8+
+- Node.js v18+ (for running with Turborepo)
 - Virtual environment (recommended)
 
-### Setup
+### Option 1: Setup with npm (Recommended)
+
+The service is configured to be run as part of the QuPot monorepo using Turborepo:
+
+```bash
+# From the quantum-service directory
+npm run setup    # Creates virtual env and installs dependencies
+npm run dev      # Starts the service
+
+# Alternatively, from the root directory
+npm run dev -- --filter=quantum-service
+```
+
+### Option 2: Manual Setup
 
 1. Create and activate a virtual environment:
 ```bash
@@ -29,14 +44,10 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-## Running the Service
-
-Start the service with:
+3. Start the service:
 ```bash
-python -m uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+python -m uvicorn src.main:app --host 0.0.0.0 --port 8002 --reload
 ```
-
-The service will be available at http://localhost:8000
 
 ## API Endpoints
 
@@ -72,29 +83,66 @@ The service will be available at http://localhost:8000
     "circuit_qubits": 1,
     "circuit_depth": 2,
     "measurement_counts": {"0": 500, "1": 500},
-    "explanation": "This quantum circuit places a qubit in superposition..."
+    "explanation": "This quantum circuit places a qubit in superposition using a Hadamard gate, creating an equal probability of measuring 0 or 1. The measurement then collapses the superposition, providing a truly random bit."
   }
   ```
 
-## Testing the Service
+## Interactive Documentation
 
-You can test the service using the included client script:
+The service provides an interactive Swagger UI documentation at `/docs` when running. This allows you to:
+- Explore available endpoints
+- Try out API requests directly in the browser
+- View detailed request and response schemas
+
+Additionally, a custom HTML documentation page is available at the root URL (`/`).
+
+## Testing and Utilities
+
+### Environment Check
+
+Verify your environment setup:
 ```bash
-python client.py
+npm run check-env
 ```
 
-This will test all available endpoints and display the results.
+This checks for all required dependencies and tests Qiskit integration.
+
+### API Testing
+
+Test the API endpoints:
+```bash
+python client.py  # Tests multiple endpoints
+python check_api.py  # For quick API checks
+```
+
+### Quantum Circuit Visualization
+
+Generate visualizations of the quantum circuits:
+```bash
+python visualize_circuit.py
+```
+
+This creates PNG images showing:
+- Quantum circuit for single bit generation
+- Distribution of quantum measurements
+- Multi-bit quantum circuit for number generation
 
 ## Quantum Theory Background
 
 The random number generation in this service uses the fundamental quantum principle of superposition. When a qubit is placed in superposition using a Hadamard gate, it has an equal probability of being measured as either 0 or 1. This measurement process is truly random according to the laws of quantum mechanics, not just pseudorandom like classical algorithms.
 
+Unlike traditional random number generators that use deterministic algorithms, quantum random number generation leverages quantum mechanical phenomena to produce truly unpredictable results, which is ideal for fair lottery applications.
+
 ## Docker Support
 
 The service can be run in a Docker container using the provided Dockerfile:
 ```bash
-docker build -t quantum-service -f ../../docker/quantum-service.Dockerfile ../..
-docker run -p 8000:8000 quantum-service
+# From the root directory
+docker build -t quantum-service -f ./docker/quantum-service.Dockerfile .
+docker run -p 8002:8002 quantum-service
+
+# Or using Docker Compose
+npm run docker:up
 ```
 
 ## Integration with Other Services
@@ -102,3 +150,15 @@ docker run -p 8000:8000 quantum-service
 This service is designed to integrate with the other microservices in the QuPot platform:
 - The API Gateway forwards requests to this service
 - The Lottery Service uses this service to generate random numbers for draws
+
+## Available Scripts
+
+| Script | Description |
+|--------|-------------|
+| `npm run setup` | Creates virtual environment and installs dependencies |
+| `npm run dev` | Starts the service in development mode |
+| `npm run lint` | Runs code linting with ruff |
+| `npm run test` | Runs tests with pytest |
+| `npm run format` | Formats code with black |
+| `npm run check-env` | Verifies environment setup |
+| `npm run clean` | Removes virtual environment |

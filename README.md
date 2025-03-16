@@ -25,50 +25,53 @@ The platform consists of multiple microservices:
 
 ### Prerequisites
 
-- Docker and Docker Compose
 - Node.js v18+
 - npm v9+
+- Python 3.8+ (for Quantum Service)
+- Docker and Docker Compose (optional, for containerized development)
 
-### Local Development
+### Option 1: Development with Turborepo
 
-1. Clone the repository
-```
-git clone https://github.com/yourusername/qupot.git
+1. Clone the repository and install dependencies:
+```bash
+git clone <repository-url>
 cd qupot
-```
-
-2. Install dependencies
-```
 npm install
 ```
 
-3. Start all services using Docker Compose
-```
-npm run docker:up
+2. Run services using Turborepo:
+```bash
+# Run all services
+npm run dev
+
+# Run only the quantum service
+npm run dev -- --filter=quantum-service
 ```
 
-4. Access services:
+3. Access services:
    - API Gateway: http://localhost:3000
-   - Quantum Service: http://localhost:8000
+   - Quantum Service: http://localhost:8002
    - Lottery Service: http://localhost:3001
    - Blockchain Service: http://localhost:3002
    - Auth Service: http://localhost:3003
 
-5. Stop all services
-```
-npm run docker:down
-```
+### Option 2: Development with Docker
 
-### Development without Docker
-
-1. Install dependencies
-```
+1. Clone the repository and install dependencies:
+```bash
+git clone <repository-url>
+cd qupot
 npm install
 ```
 
-2. Start services in development mode
+2. Start all services using Docker Compose:
+```bash
+npm run docker:up
 ```
-npm run dev
+
+3. Stop all services:
+```bash
+npm run docker:down
 ```
 
 ## Project Structure
@@ -76,13 +79,24 @@ npm run dev
 ```
 qupot/
 ├── apps/                 # Microservices
-│   ├── api-gateway/      # API Gateway service
-│   ├── quantum-service/  # Quantum random number service
-│   ├── lottery-service/  # Lottery management service
-│   ├── blockchain-service/ # Blockchain & smart contract service
-│   └── auth-service/     # Authentication service
+│   ├── api-gateway/      # API Gateway service (NestJS)
+│   ├── quantum-service/  # Quantum random number service (FastAPI/Python)
+│   ├── lottery-service/  # Lottery management service (NestJS)
+│   ├── blockchain-service/ # Blockchain & smart contract service (NestJS/Solidity)
+│   └── auth-service/     # Authentication service (NestJS)
 ├── packages/             # Shared libraries
-│   └── common-lib/       # Common utilities & types
+│   └── common-lib/       # Common utilities & types (TypeScript)
 ├── docker/               # Docker configurations
 └── docker-compose.yml    # Docker Compose configuration
 ```
+
+## Documentation
+
+- **[DEV_GUIDE.md](./DEV_GUIDE.md)**: Detailed development instructions
+- **[SETUP_SUMMARY.md](./SETUP_SUMMARY.md)**: Summary of the current setup
+- **[QUANTUM_CONCEPTS.md](./docs/QUANTUM_CONCEPTS.md)**: Explanation of quantum computing principles used
+- **Service README files**: Each service contains its own documentation
+
+## Current Focus
+
+The project is currently focused on developing the **Quantum Service**, which provides quantum random number generation through a REST API using Qiskit and quantum computing principles. This service leverages quantum superposition and measurement to generate truly random numbers that are cryptographically secure and unpredictable, making them ideal for fair lottery draws.
