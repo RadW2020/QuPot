@@ -18,9 +18,9 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@common/*": ["../../packages/common-lib/src/*"]
+      "@qupot/common-lib/*": ["../../packages/common-lib/*"]
     }
   },
-  "include": ["src/**/*", "../../packages/common-lib/src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*"],
+  "references": [{ "path": "../../packages/common-lib" }]
 }
