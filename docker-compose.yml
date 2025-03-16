@@ -6,14 +6,14 @@ services:
       context: .
       dockerfile: ./docker/api-gateway.Dockerfile
     ports:
-      - "3000:3000"
+      - "8000:8000"
     environment:
-      - PORT=3000
+      - PORT=8000
       - NODE_ENV=development
-      - QUANTUM_SERVICE_URL=http://quantum-service:8000
-      - LOTTERY_SERVICE_URL=http://lottery-service:3001
-      - BLOCKCHAIN_SERVICE_URL=http://blockchain-service:3002
-      - AUTH_SERVICE_URL=http://auth-service:3003
+      - AUTH_SERVICE_URL=http://auth-service:8001
+      - QUANTUM_SERVICE_URL=http://quantum-service:8002
+      - LOTTERY_SERVICE_URL=http://lottery-service:8003
+      - BLOCKCHAIN_SERVICE_URL=http://blockchain-service:8004
     depends_on:
       - quantum-service
       - lottery-service
@@ -45,9 +45,9 @@ services:
       context: .
       dockerfile: ./docker/lottery-service.Dockerfile
     ports:
-      - "3001:3001"
+      - "8003:8003"
     environment:
-      - PORT=3001
+      - PORT=8003
       - NODE_ENV=development
       - DATABASE_URL=postgres://postgres:postgres@postgres:5432/lottery
     depends_on:
@@ -64,9 +64,9 @@ services:
       context: .
       dockerfile: ./docker/blockchain-service.Dockerfile
     ports:
-      - "3002:3002"
+      - "8004:8004"
     environment:
-      - PORT=3002
+      - PORT=8004
       - NODE_ENV=development
       - HARDHAT_NETWORK=hardhat
     networks:
@@ -81,9 +81,9 @@ services:
       context: .
       dockerfile: ./docker/auth-service.Dockerfile
     ports:
-      - "3003:3003"
+      - "8001:8001"
     environment:
-      - PORT=3003
+      - PORT=8001
       - NODE_ENV=development
       - DB_HOST=postgres
       - DB_PORT=5432

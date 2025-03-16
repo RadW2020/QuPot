@@ -72,6 +72,7 @@ npm run dev
 ```
 
 When running, the Quantum Service will be available at http://localhost:8002 with:
+
 - Interactive API documentation at http://localhost:8002/docs
 - Custom HTML documentation at http://localhost:8002/
 
@@ -91,7 +92,7 @@ cd apps/api-gateway
 npm run dev
 ```
 
-When running, the API Gateway will be available at http://localhost:3000
+When running, the API Gateway will be available at http://localhost:8000
 
 ## Docker Development
 
@@ -106,6 +107,7 @@ npm run docker:down
 ```
 
 Docker development is especially useful for:
+
 - Testing the entire system integration
 - Ensuring consistent environments across developer machines
 - Running services that require specific dependencies
@@ -115,11 +117,13 @@ Docker development is especially useful for:
 ### Adding a New Feature to Quantum Service
 
 1. Navigate to the quantum service directory:
+
    ```bash
    cd apps/quantum-service
    ```
 
 2. Activate the virtual environment:
+
    ```bash
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
@@ -127,6 +131,7 @@ Docker development is especially useful for:
 3. Implement your feature in `src/main.py` or create new modules as needed
 
 4. Test your implementation:
+
    ```bash
    python client.py
    ```
@@ -181,14 +186,14 @@ qupot/
 
 ## Service Ports
 
-| Service | Port | Technologies |
-|---------|------|--------------|
-| API Gateway | 3000 | NestJS |
-| Quantum Service | 8002 | FastAPI/Python/Qiskit |
-| Lottery Service | 3001 | NestJS/PostgreSQL |
-| Blockchain Service | 3002 | NestJS/Hardhat/Solidity |
-| Auth Service | 3003 | NestJS/JWT |
-| PostgreSQL | 5432 | PostgreSQL |
+| Service            | Port | Technologies            |
+| ------------------ | ---- | ----------------------- |
+| API Gateway        | 8000 | NestJS                  |
+| Auth Service       | 8001 | NestJS/JWT              |
+| Quantum Service    | 8002 | FastAPI/Python/Qiskit   |
+| Lottery Service    | 8003 | NestJS/PostgreSQL       |
+| Blockchain Service | 8004 | NestJS/Hardhat/Solidity |
+| PostgreSQL         | 5432 | PostgreSQL              |
 
 ## Troubleshooting
 
@@ -197,10 +202,11 @@ qupot/
 If you encounter a "port already in use" error:
 
 1. Check which process is using the port:
+
    ```bash
    # On macOS/Linux
    lsof -i :<port>
-   
+
    # On Windows
    netstat -ano | findstr :<port>
    ```
@@ -220,6 +226,7 @@ npm run check-env
 ```
 
 Common issues include:
+
 - Missing Python dependencies
 - Incorrect Python version
 - Virtual environment not activated

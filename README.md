@@ -49,11 +49,11 @@ npm run dev -- --filter=quantum-service
 ```
 
 3. Access services:
-   - API Gateway: http://localhost:3000
+   - API Gateway: http://localhost:8000
+   - Auth Service: http://localhost:8001
    - Quantum Service: http://localhost:8002
-   - Lottery Service: http://localhost:3001
-   - Blockchain Service: http://localhost:3002
-   - Auth Service: http://localhost:3003
+   - Lottery Service: http://localhost:8003
+   - Blockchain Service: http://localhost:8004
 
 ### Option 2: Development with Docker
 
