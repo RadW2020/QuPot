@@ -94,7 +94,7 @@ export class AuthService {
     try {
       // Verify the refresh token
       const payload = await this.jwtService.verifyAsync(
-        refreshTokenDto.refresh_token
+        refreshTokenDto.refreshToken
       );
 
       // Find user and check if refresh token matches
@@ -102,7 +102,7 @@ export class AuthService {
         where: { id: payload.sub },
       });
 
-      if (!user || user.refreshToken !== refreshTokenDto.refresh_token) {
+      if (!user || user.refreshToken !== refreshTokenDto.refreshToken) {
         throw new UnauthorizedException("Invalid refresh token");
       }
 

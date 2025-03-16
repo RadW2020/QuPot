@@ -62,8 +62,9 @@ describe("AuthService", () => {
     const registerDto = {
       email: "test@example.com",
       password: "password123",
-      firstName: "Test",
-      lastName: "User",
+      username: "testuser",
+      firstName: "John",
+      lastName: "Doe",
     };
 
     it("should register a new user successfully", async () => {
@@ -139,7 +140,7 @@ describe("AuthService", () => {
 
   describe("refresh", () => {
     const refreshTokenDto = {
-      refresh_token: "valid_refresh_token",
+      refreshToken: "valid_refresh_token",
     };
 
     it("should refresh tokens successfully", async () => {

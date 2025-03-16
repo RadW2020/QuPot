@@ -43,8 +43,9 @@ describe("AuthController", () => {
     const registerDto: CreateUserDto = {
       email: "test@example.com",
       password: "password123",
-      firstName: "Test",
-      lastName: "User",
+      username: "testuser",
+      firstName: "John",
+      lastName: "Doe",
     };
 
     it("should register a new user", async () => {
@@ -83,7 +84,7 @@ describe("AuthController", () => {
 
   describe("refresh", () => {
     const refreshTokenDto: RefreshTokenDto = {
-      refresh_token: "valid_refresh_token",
+      refreshToken: "valid_refresh_token",
     };
 
     it("should refresh tokens", async () => {
