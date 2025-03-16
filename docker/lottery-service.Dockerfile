@@ -20,6 +20,6 @@ COPY apps/lottery-service ./apps/lottery-service
 RUN npm run build --workspace=common-lib
 RUN npm run build --workspace=lottery-service
 
-EXPOSE 3001
+EXPOSE 8003
 
 CMD ["node", "apps/lottery-service/dist/main.js"]

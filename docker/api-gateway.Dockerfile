@@ -20,6 +20,6 @@ COPY apps/api-gateway ./apps/api-gateway
 RUN npm run build --workspace=common-lib
 RUN npm run build --workspace=api-gateway
 
-EXPOSE 3000
+EXPOSE 8000
 
 CMD ["node", "apps/api-gateway/dist/main.js"]

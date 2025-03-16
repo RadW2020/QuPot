@@ -20,6 +20,6 @@ COPY apps/blockchain-service ./apps/blockchain-service
 RUN npm run build --workspace=common-lib
 RUN cd apps/blockchain-service && nest build
 
-EXPOSE 3002
+EXPOSE 8004
 
 CMD ["node", "apps/blockchain-service/dist/src/main.js"]
