@@ -1,0 +1,15 @@
+{
+  "name": "quantum-service",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "setup": "python -m venv venv && . venv/bin/activate && pip install -r requirements.txt",
+    "build": "echo 'Python service - no build required'",
+    "dev": "if [ ! -d \"venv\" ]; then npm run setup; fi && . venv/bin/activate && uvicorn src.main:app --reload --host 0.0.0.0 --port 8002",
+    "lint": ". venv/bin/activate && ruff check .",
+    "test": ". venv/bin/activate && pytest",
+    "format": ". venv/bin/activate && black .",
+    "clean": "rm -rf venv",
+    "check-env": "if [ ! -d \"venv\" ]; then npm run setup; fi && . venv/bin/activate && python scripts/check_env.py"
+  }
+}
