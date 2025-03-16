@@ -1,11 +1,11 @@
 {
-  "name": "common-lib",
+  "name": "@qupot/common-lib",
   "version": "0.1.0",
   "private": true,
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -b",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint \"{src,apps,libs}/**/*.ts\" --fix",
     "dev": "npm run build -- --watch",

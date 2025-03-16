@@ -1,7 +1,7 @@
 // Basic app constants
 export const APP_NAME = "QuPot";
 export const API_VERSION = "v1";
-export const DEFAULT_PORT = 3000;
+export const DEFAULT_PORT = 8000;
 
 export const SERVICE_PORTS = {
   API_GATEWAY: 8000,
