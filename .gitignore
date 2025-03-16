@@ -1,0 +1,8 @@
+# ignore all apple system files
+**.DS_Store
+
+# ignore all node_modules
+node_modules
+
+agent.md
+
