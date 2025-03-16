@@ -1,34 +1,28 @@
-FROM node:18-alpine AS base
-
-# Set working directory
+FROM node:18-alpine as base
 WORKDIR /app
 
-FROM base AS builder
-# Copy package files
-COPY package.json package-lock.json* turbo.json ./
-COPY packages/common-lib/package.json ./packages/common-lib/package.json
-COPY apps/auth-service/package.json ./apps/auth-service/package.json
+FROM base as builder
+COPY . .
+RUN npm install turbo --global
+RUN turbo prune --scope=auth-service --docker
 
-# Install dependencies
-RUN npm ci
-
-# Copy app source
-COPY packages/common-lib ./packages/common-lib
-COPY apps/auth-service ./apps/auth-service
-
-# Build common-lib first, then the auth-service
-RUN npm run build --workspace=common-lib
+FROM base as installer
+COPY --from=builder /app/out/json/ .
+COPY --from=builder /app/out/package-lock.json ./package-lock.json
+COPY --from=builder /app/out/full/ .
+RUN npm install
+COPY turbo.json turbo.json
 RUN npm run build --workspace=auth-service
 
-FROM base AS runner
-WORKDIR /app
-
-COPY --from=builder /app/package.json /app/package-lock.json* /app/turbo.json ./
-COPY --from=builder /app/packages ./packages
-COPY --from=builder /app/apps/auth-service ./apps/auth-service
-
-RUN npm ci --production
+FROM base as runner
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nodejs
+USER nodejs
+COPY --from=installer --chown=nodejs:nodejs /app/package.json ./package.json
+COPY --from=installer --chown=nodejs:nodejs /app/node_modules ./node_modules
+COPY --from=installer --chown=nodejs:nodejs /app/apps/auth-service/package.json ./apps/auth-service/package.json
+COPY --from=installer --chown=nodejs:nodejs /app/apps/auth-service/dist ./apps/auth-service/dist
+COPY --from=installer --chown=nodejs:nodejs /app/packages ./packages
 
 EXPOSE 3003
-
-CMD ["npm", "run", "start", "--workspace=auth-service"]
+CMD ["node", "apps/auth-service/dist/apps/auth-service/src/main.js"]

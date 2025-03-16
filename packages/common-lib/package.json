@@ -5,9 +5,10 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "build": "tsc",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "lint": "eslint \"{src,apps,libs}/**/*.ts\" --fix",
     "dev": "npm run build -- --watch",
-    "lint": "eslint \"**/*.ts\"",
     "clean": "rm -rf .turbo node_modules dist"
   },
   "devDependencies": {

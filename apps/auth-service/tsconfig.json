@@ -20,5 +20,7 @@
     "paths": {
       "@common/*": ["../../packages/common-lib/src/*"]
     }
-  }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }
