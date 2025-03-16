@@ -1,0 +1,19 @@
+{
+  "name": "common-lib",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "dev": "npm run build -- --watch",
+    "lint": "eslint \"**/*.ts\"",
+    "clean": "rm -rf .turbo node_modules dist"
+  },
+  "devDependencies": {
+    "@types/node": "^20.3.1",
+    "eslint": "^8.42.0",
+    "tsup": "^7.2.0",
+    "typescript": "^5.1.3"
+  }
+}
