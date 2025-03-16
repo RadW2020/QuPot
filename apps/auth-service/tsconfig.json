@@ -21,6 +21,6 @@
       "@common/*": ["../../packages/common-lib/src/*"]
     }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "../../packages/common-lib/src/**/*"],
   "exclude": ["node_modules", "dist"]
 }

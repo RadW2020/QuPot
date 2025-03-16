@@ -1,34 +1,25 @@
-FROM node:18-alpine AS base
+FROM node:18-alpine
 
-# Set working directory
 WORKDIR /app
 
-FROM base AS builder
 # Copy package files
-COPY package.json package-lock.json* turbo.json ./
-COPY packages/common-lib/package.json ./packages/common-lib/package.json
-COPY apps/blockchain-service/package.json ./apps/blockchain-service/package.json
+COPY package*.json ./
+COPY turbo.json ./
+COPY packages/common-lib/package.json ./packages/common-lib/
+COPY apps/blockchain-service/package.json ./apps/blockchain-service/
 
 # Install dependencies
-RUN npm ci
+RUN npm install
+RUN npm install @nestjs/cli --global
 
-# Copy app source
+# Copy source code
 COPY packages/common-lib ./packages/common-lib
 COPY apps/blockchain-service ./apps/blockchain-service
 
-# Build common-lib first, then the blockchain-service
+# Build services
 RUN npm run build --workspace=common-lib
-RUN npm run build --workspace=blockchain-service
-
-FROM base AS runner
-WORKDIR /app
-
-COPY --from=builder /app/package.json /app/package-lock.json* /app/turbo.json ./
-COPY --from=builder /app/packages ./packages
-COPY --from=builder /app/apps/blockchain-service ./apps/blockchain-service
-
-RUN npm ci --production
+RUN cd apps/blockchain-service && nest build
 
 EXPOSE 3002
 
-CMD ["npm", "run", "start", "--workspace=blockchain-service"]
+CMD ["node", "apps/blockchain-service/dist/src/main.js"]

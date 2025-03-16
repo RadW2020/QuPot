@@ -1,28 +1,25 @@
-FROM node:18-alpine as base
+FROM node:18-alpine
+
 WORKDIR /app
 
-FROM base as builder
-COPY . .
-RUN npm install turbo --global
-RUN turbo prune --scope=auth-service --docker
+# Copy package files
+COPY package*.json ./
+COPY turbo.json ./
+COPY packages/common-lib/package.json ./packages/common-lib/
+COPY apps/auth-service/package.json ./apps/auth-service/
 
-FROM base as installer
-COPY --from=builder /app/out/json/ .
-COPY --from=builder /app/out/package-lock.json ./package-lock.json
-COPY --from=builder /app/out/full/ .
+# Install dependencies
 RUN npm install
-COPY turbo.json turbo.json
-RUN npm run build --workspace=auth-service
+RUN npm install @nestjs/cli --global
 
-FROM base as runner
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nodejs
-USER nodejs
-COPY --from=installer --chown=nodejs:nodejs /app/package.json ./package.json
-COPY --from=installer --chown=nodejs:nodejs /app/node_modules ./node_modules
-COPY --from=installer --chown=nodejs:nodejs /app/apps/auth-service/package.json ./apps/auth-service/package.json
-COPY --from=installer --chown=nodejs:nodejs /app/apps/auth-service/dist ./apps/auth-service/dist
-COPY --from=installer --chown=nodejs:nodejs /app/packages ./packages
+# Copy source code
+COPY packages/common-lib ./packages/common-lib
+COPY apps/auth-service ./apps/auth-service
+
+# Build services
+RUN npm run build --workspace=common-lib
+RUN cd apps/auth-service && nest build
 
 EXPOSE 3003
-CMD ["node", "apps/auth-service/dist/apps/auth-service/src/main.js"]
+
+CMD ["node", "apps/auth-service/dist/main.js"]

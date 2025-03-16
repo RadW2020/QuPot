@@ -11,6 +11,7 @@ agent.md
 apps/auth-service/node_modules
 apps/auth-service/dist
 apps/auth-service/.turbo
+apps/auth-service/tsconfig.tsbuildinfo
 
 apps/blockchain-service/node_modules
 apps/blockchain-service/dist

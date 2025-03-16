@@ -1,34 +1,25 @@
-FROM node:18-alpine AS base
+FROM node:18-alpine
 
-# Set working directory
 WORKDIR /app
 
-FROM base AS builder
 # Copy package files
-COPY package.json package-lock.json* turbo.json ./
-COPY packages/common-lib/package.json ./packages/common-lib/package.json
-COPY apps/lottery-service/package.json ./apps/lottery-service/package.json
+COPY package*.json ./
+COPY turbo.json ./
+COPY packages/common-lib/package.json ./packages/common-lib/
+COPY apps/lottery-service/package.json ./apps/lottery-service/
 
 # Install dependencies
-RUN npm ci
+RUN npm install
+RUN npm install @nestjs/cli --global
 
-# Copy app source
+# Copy source code
 COPY packages/common-lib ./packages/common-lib
 COPY apps/lottery-service ./apps/lottery-service
 
-# Build common-lib first, then the lottery-service
+# Build services
 RUN npm run build --workspace=common-lib
 RUN npm run build --workspace=lottery-service
 
-FROM base AS runner
-WORKDIR /app
-
-COPY --from=builder /app/package.json /app/package-lock.json* /app/turbo.json ./
-COPY --from=builder /app/packages ./packages
-COPY --from=builder /app/apps/lottery-service ./apps/lottery-service
-
-RUN npm ci --production
-
 EXPOSE 3001
 
-CMD ["npm", "run", "start", "--workspace=lottery-service"]
+CMD ["node", "apps/lottery-service/dist/main.js"]
