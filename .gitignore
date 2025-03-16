@@ -6,3 +6,35 @@ node_modules
 
 agent.md
 
+.turbo
+
+apps/auth-service/node_modules
+apps/auth-service/dist
+apps/auth-service/.turbo
+
+apps/blockchain-service/node_modules
+apps/blockchain-service/dist
+apps/blockchain-service/.turbo
+
+apps/quantum-service/node_modules
+apps/quantum-service/dist
+apps/quantum-service/.turbo
+
+apps/lottery-service/node_modules
+apps/lottery-service/dist
+apps/lottery-service/.turbo
+
+apps/api-gateway/node_modules
+apps/api-gateway/dist
+apps/api-gateway/.turbo
+
+packages/common-lib/node_modules
+packages/common-lib/dist
+packages/common-lib/.turbo
+
+
+
+
+
+
+
