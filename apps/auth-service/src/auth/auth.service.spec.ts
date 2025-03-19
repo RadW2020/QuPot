@@ -5,12 +5,14 @@ import { Repository } from "typeorm";
 import { AuthService } from "./auth.service";
 import { User } from "./entities/user.entity";
 import { ConflictException, UnauthorizedException } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import * as bcrypt from "bcrypt";
 
 describe("AuthService", () => {
   let service: AuthService;
   let userRepository: Repository<User>;
   let jwtService: JwtService;
+  let configService: ConfigService;
 
   const mockUser = {
     id: "1",
@@ -34,6 +36,10 @@ describe("AuthService", () => {
     verifyAsync: jest.fn(),
   };
 
+  const mockConfigService = {
+    get: jest.fn().mockReturnValue("test-secret"),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -46,12 +52,17 @@ describe("AuthService", () => {
           provide: JwtService,
           useValue: mockJwtService,
         },
+        {
+          provide: ConfigService,
+          useValue: mockConfigService,
+        },
       ],
     }).compile();
 
     service = module.get<AuthService>(AuthService);
     userRepository = module.get<Repository<User>>(getRepositoryToken(User));
     jwtService = module.get<JwtService>(JwtService);
+    configService = module.get<ConfigService>(ConfigService);
   });
 
   afterEach(() => {
