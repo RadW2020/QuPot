@@ -1,9 +1,9 @@
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
-import { SERVICE_PORTS } from "@common/constants";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  await app.listen(SERVICE_PORTS.LOTTERY_SERVICE);
+  await app.listen(8003);
+  console.log("🚀 Lottery service running on port 8003");
 }
 bootstrap();
