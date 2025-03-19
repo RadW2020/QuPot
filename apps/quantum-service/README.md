@@ -34,24 +34,54 @@ npm run dev -- --filter=quantum-service
 ### Option 2: Manual Setup
 
 1. Create and activate a virtual environment:
+
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
 2. Install dependencies:
+
 ```bash
 pip install -r requirements.txt
 ```
 
 3. Start the service:
+
 ```bash
 python -m uvicorn src.main:app --host 0.0.0.0 --port 8002 --reload
 ```
 
+## Dependencies
+
+The service requires the following main dependencies with minimum versions:
+
+- fastapi >= 0.115.0
+- uvicorn >= 0.24.0
+- pydantic >= 2.0.0
+- qiskit >= 1.0.0
+- qiskit-aer >= 0.13.0
+- qiskit-ibm-runtime >= 0.18.0
+- pytest >= 8.0.0
+- httpx >= 0.24.0
+- python-dotenv >= 1.0.0
+
 ## API Endpoints
 
+### Health Check
+
+- **URL**: `/health`
+- **Method**: `GET`
+- **Response**:
+  ```json
+  {
+    "status": "healthy",
+    "service": "quantum-random-number-generator"
+  }
+  ```
+
 ### Generate Random Numbers
+
 - **URL**: `/api/v1/random`
 - **Method**: `POST`
 - **Request Body**:
@@ -74,6 +104,7 @@ python -m uvicorn src.main:app --host 0.0.0.0 --port 8002 --reload
   ```
 
 ### Get Quantum Circuit Info
+
 - **URL**: `/api/v1/quantum-circuit`
 - **Method**: `GET`
 - **Response**:
@@ -82,7 +113,7 @@ python -m uvicorn src.main:app --host 0.0.0.0 --port 8002 --reload
     "circuit_description": "Hadamard gate followed by measurement",
     "circuit_qubits": 1,
     "circuit_depth": 2,
-    "measurement_counts": {"0": 500, "1": 500},
+    "measurement_counts": { "0": 500, "1": 500 },
     "explanation": "This quantum circuit places a qubit in superposition using a Hadamard gate, creating an equal probability of measuring 0 or 1. The measurement then collapses the superposition, providing a truly random bit."
   }
   ```
@@ -90,42 +121,33 @@ python -m uvicorn src.main:app --host 0.0.0.0 --port 8002 --reload
 ## Interactive Documentation
 
 The service provides an interactive Swagger UI documentation at `/docs` when running. This allows you to:
+
 - Explore available endpoints
 - Try out API requests directly in the browser
 - View detailed request and response schemas
 
 Additionally, a custom HTML documentation page is available at the root URL (`/`).
 
-## Testing and Utilities
+## Testing
 
-### Environment Check
+### Running Tests
 
-Verify your environment setup:
 ```bash
-npm run check-env
+# Activate virtual environment
+source venv/bin/activate
+
+# Run tests
+python -m pytest tests/ -v
 ```
 
-This checks for all required dependencies and tests Qiskit integration.
+### Test Coverage
 
-### API Testing
+The service includes tests for:
 
-Test the API endpoints:
-```bash
-python client.py  # Tests multiple endpoints
-python check_api.py  # For quick API checks
-```
-
-### Quantum Circuit Visualization
-
-Generate visualizations of the quantum circuits:
-```bash
-python visualize_circuit.py
-```
-
-This creates PNG images showing:
-- Quantum circuit for single bit generation
-- Distribution of quantum measurements
-- Multi-bit quantum circuit for number generation
+- Health check endpoint
+- Random number generation with various parameters
+- Quantum circuit information endpoint
+- Error handling and validation
 
 ## Quantum Theory Background
 
@@ -133,9 +155,22 @@ The random number generation in this service uses the fundamental quantum princi
 
 Unlike traditional random number generators that use deterministic algorithms, quantum random number generation leverages quantum mechanical phenomena to produce truly unpredictable results, which is ideal for fair lottery applications.
 
+## Known Issues and Future Updates
+
+### Deprecation Warnings
+
+The service currently uses some deprecated Qiskit features that will be updated in future versions:
+
+- `BackendSampler` will be replaced with `BackendSamplerV2`
+- Some DAGCircuit properties will be updated to their new versions
+- The `condition` property of `Instruction` will be updated
+
+These updates will be implemented in future versions to ensure compatibility with the latest Qiskit releases.
+
 ## Docker Support
 
 The service can be run in a Docker container using the provided Dockerfile:
+
 ```bash
 # From the root directory
 docker build -t quantum-service -f ./docker/quantum-service.Dockerfile .
@@ -148,17 +183,6 @@ npm run docker:up
 ## Integration with Other Services
 
 This service is designed to integrate with the other microservices in the QuPot platform:
+
 - The API Gateway forwards requests to this service
 - The Lottery Service uses this service to generate random numbers for draws
-
-## Available Scripts
-
-| Script | Description |
-|--------|-------------|
-| `npm run setup` | Creates virtual environment and installs dependencies |
-| `npm run dev` | Starts the service in development mode |
-| `npm run lint` | Runs code linting with ruff |
-| `npm run test` | Runs tests with pytest |
-| `npm run format` | Formats code with black |
-| `npm run check-env` | Verifies environment setup |
-| `npm run clean` | Removes virtual environment |

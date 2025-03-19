@@ -11,10 +11,10 @@ import uvicorn
 import datetime
 import uuid
 
-# Now we're using Qiskit
-from qiskit import QuantumCircuit 
-from qiskit_aer import Aer
-from qiskit.primitives import Sampler
+# Updated Qiskit imports
+from qiskit import QuantumCircuit
+from qiskit.primitives import BackendSampler
+from qiskit_aer import AerSimulator
 
 app = FastAPI(
     title="Quantum Random Number Generator API",
@@ -47,6 +47,10 @@ class RandomNumberResponse(BaseModel):
     timestamp: str
     request_id: str
 
+# Initialize the simulator and sampler once
+simulator = AerSimulator()
+sampler = BackendSampler(backend=simulator)
+
 def generate_quantum_random_bit():
     """Generate a single random bit using a quantum circuit."""
     # Create a quantum circuit with 1 qubit
@@ -58,13 +62,13 @@ def generate_quantum_random_bit():
     # Measure the qubit
     qc.measure(0, 0)
     
-    # Execute the circuit on the qasm simulator
-    simulator = Aer.get_backend('qasm_simulator')
-    sampler = Sampler()
-    result = sampler.run(qc, shots=1).result()
+    # Execute the circuit using the sampler
+    job = sampler.run(circuits=[qc], shots=1)
+    result = job.result()
+    counts = result.quasi_dists[0]
     
     # Get the single measurement result (0 or 1)
-    measurement = next(iter(result.quasi_dists[0].keys()))
+    measurement = next(iter(counts.keys()))
     
     # Return the measured bit
     return measurement
@@ -160,26 +164,26 @@ async def get_quantum_circuit_info():
     # Measure the qubit
     qc.measure(0, 0)
     
-    # Execute the circuit on the qasm simulator with multiple shots
-    # to demonstrate the distribution
-    sampler = Sampler()
-    result = sampler.run(qc, shots=1000).result()
+    # Execute the circuit with multiple shots to demonstrate the distribution
+    job = sampler.run(circuits=[qc], shots=1000)
+    result = job.result()
+    counts = result.quasi_dists[0]
     
-    # Count occurrences of 0 and 1
-    counts = {"0": 0, "1": 0}
-    for outcome, probability in result.quasi_dists[0].items():
-        counts[str(outcome)] = int(probability * 1000)
+    # Format counts for the response
+    measurement_counts = {"0": 0, "1": 0}
+    for outcome, probability in counts.items():
+        measurement_counts[str(outcome)] = int(probability * 1000)
     
     # Return information about the circuit and its results
     return {
         "circuit_description": "Hadamard gate followed by measurement",
         "circuit_qubits": 1,
         "circuit_depth": 2,
-        "measurement_counts": counts,
+        "measurement_counts": measurement_counts,
         "explanation": "This quantum circuit places a qubit in superposition using a Hadamard gate, "
                      "creating an equal probability of measuring 0 or 1. The measurement then "
                      "collapses the superposition, providing a truly random bit."
     }
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8002, reload=True)
