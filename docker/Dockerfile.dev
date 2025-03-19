@@ -1,0 +1,24 @@
+FROM node:18
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY apps/*/package*.json ./apps/*/
+COPY packages/*/package*.json ./packages/*/
+
+# Install dependencies
+RUN npm install
+
+# Copy the rest of the application
+COPY . .
+
+# Install dependencies for each service
+RUN cd apps/auth-service && npm install && \
+    cd ../lottery-service && npm install && \
+    cd ../quantum-service && npm install && \
+    cd ../blockchain-service && npm install && \
+    cd ../api-gateway && npm install
+
+# Set the default command
+CMD ["npm", "run", "start:dev"] 

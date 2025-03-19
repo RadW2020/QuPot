@@ -1,0 +1,168 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:14
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_MULTIPLE_DATABASES=lottery,auth_service
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres:/docker-entrypoint-initdb.d
+    networks:
+      - qupot-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  auth-service:
+    image: node:18
+    ports:
+      - "8001:8001"
+      - "9229:9229"
+    environment:
+      - PORT=8001
+      - NODE_ENV=development
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=auth_service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - qupot-network
+    volumes:
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+      - ./apps/auth-service:/app/apps/auth-service
+      - ./packages:/app/packages
+      - /app/node_modules
+      - /app/apps/auth-service/node_modules
+    working_dir: /app
+    command: >
+      sh -c "npm install &&
+             cd apps/auth-service && 
+             npm install &&
+             npm rebuild bcrypt &&
+             npm run dev"
+    profiles:
+      - auth
+
+  lottery-service:
+    image: node:18
+    ports:
+      - "8003:8003"
+      - "9230:9229"
+    environment:
+      - PORT=8003
+      - NODE_ENV=development
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=lottery
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - qupot-network
+    volumes:
+      - .:/app
+      - node_modules_lottery_service:/app/apps/lottery-service/node_modules
+    working_dir: /app
+    command: >
+      sh -c "npm install &&
+             cd apps/lottery-service && npm install &&
+             npm run start:dev"
+    profiles:
+      - lottery
+
+  quantum-service:
+    image: python:3.11-slim
+    ports:
+      - "8002:8002"
+      - "9231:9229"
+    environment:
+      - PORT=8002
+      - ENVIRONMENT=development
+    networks:
+      - qupot-network
+    volumes:
+      - ./apps/quantum-service:/app/apps/quantum-service
+      - ./packages:/app/packages
+    working_dir: /app/apps/quantum-service
+    command: >
+      sh -c "pip install -r requirements.txt &&
+             uvicorn main:app --host 0.0.0.0 --port 8002 --reload"
+    profiles:
+      - quantum
+
+  blockchain-service:
+    image: node:18
+    ports:
+      - "8004:8004"
+      - "9232:9229"
+    environment:
+      - PORT=8004
+      - NODE_ENV=development
+      - HARDHAT_NETWORK=hardhat
+    networks:
+      - qupot-network
+    volumes:
+      - .:/app
+      - node_modules_blockchain_service:/app/apps/blockchain-service/node_modules
+    working_dir: /app
+    command: >
+      sh -c "npm install &&
+             cd apps/blockchain-service && npm install &&
+             npm run start:dev"
+    profiles:
+      - blockchain
+
+  api-gateway:
+    image: node:18
+    ports:
+      - "8000:8000"
+      - "9233:9229"
+    environment:
+      - PORT=8000
+      - NODE_ENV=development
+      - AUTH_SERVICE_URL=http://auth-service:8001
+      - QUANTUM_SERVICE_URL=http://quantum-service:8002
+      - LOTTERY_SERVICE_URL=http://lottery-service:8003
+      - BLOCKCHAIN_SERVICE_URL=http://blockchain-service:8004
+    depends_on:
+      - quantum-service
+      - lottery-service
+      - blockchain-service
+      - auth-service
+    networks:
+      - qupot-network
+    volumes:
+      - .:/app
+      - node_modules_api_gateway:/app/apps/api-gateway/node_modules
+    working_dir: /app
+    command: >
+      sh -c "npm install &&
+             cd apps/api-gateway && npm install &&
+             npm run start:dev"
+    profiles:
+      - gateway
+
+networks:
+  qupot-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  node_modules_api_gateway:
+  node_modules_lottery_service:
+  node_modules_blockchain_service:
+  node_modules_auth_service:
