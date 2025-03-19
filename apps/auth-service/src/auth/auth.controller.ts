@@ -9,6 +9,8 @@ import { AuthService } from "./auth.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { LoginDto } from "./dto/login.dto";
 import { RefreshTokenDto } from "./dto/refresh-token.dto";
+import { RequestPasswordChangeDto } from "./dto/request-password-change.dto";
+import { ConfirmPasswordChangeDto } from "./dto/confirm-password-change.dto";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 
 @ApiTags("auth")
@@ -48,5 +50,24 @@ export class AuthController {
   @ApiResponse({ status: 401, description: "Unauthorized" })
   async logout(@Request() req) {
     return this.authService.logout(req.user.userId);
+  }
+
+  @Post("request-password-change")
+  @ApiOperation({ summary: "Request password change" })
+  @ApiResponse({
+    status: 200,
+    description: "Password change email sent successfully",
+  })
+  @ApiResponse({ status: 404, description: "User not found" })
+  async requestPasswordChange(@Body() requestData: RequestPasswordChangeDto) {
+    return this.authService.requestPasswordChange(requestData);
+  }
+
+  @Post("confirm-password-change")
+  @ApiOperation({ summary: "Confirm password change" })
+  @ApiResponse({ status: 200, description: "Password changed successfully" })
+  @ApiResponse({ status: 400, description: "Invalid or expired token" })
+  async confirmPasswordChange(@Body() confirmData: ConfirmPasswordChangeDto) {
+    return this.authService.confirmPasswordChange(confirmData);
   }
 }

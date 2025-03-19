@@ -49,6 +49,15 @@ export class User {
   @Column({ type: "json", nullable: true })
   metadata: Record<string, any>;
 
+  @Column({ nullable: true })
+  walletAddress: string;
+
+  @Column({ nullable: true })
+  passwordResetToken: string;
+
+  @Column({ nullable: true })
+  passwordResetExpires: Date;
+
   @ApiProperty({
     description: "The date when the user was created",
     example: "2024-03-16T20:00:00.000Z",

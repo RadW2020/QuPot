@@ -2,6 +2,8 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  NotFoundException,
+  BadRequestException,
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -11,13 +13,18 @@ import { User } from "./entities/user.entity";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { LoginDto } from "./dto/login.dto";
 import { RefreshTokenDto } from "./dto/refresh-token.dto";
+import { RequestPasswordChangeDto } from "./dto/request-password-change.dto";
+import { ConfirmPasswordChangeDto } from "./dto/confirm-password-change.dto";
+import * as crypto from "crypto";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService
   ) {}
 
   private async generateTokens(user: User) {
@@ -132,5 +139,60 @@ export class AuthService {
       return result;
     }
     return null;
+  }
+
+  async requestPasswordChange(requestData: RequestPasswordChangeDto) {
+    const user = await this.userRepository.findOne({
+      where: { email: requestData.email },
+    });
+
+    if (!user) {
+      throw new NotFoundException("Usuario no encontrado");
+    }
+
+    // Generar token único
+    const token = crypto.randomBytes(32).toString("hex");
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 1); // Token válido por 1 hora
+
+    // Guardar token en la base de datos
+    user.passwordResetToken = token;
+    user.passwordResetExpires = expiresAt;
+    await this.userRepository.save(user);
+
+    // TODO: Enviar email con el token
+    // Por ahora solo retornamos un mensaje
+    return {
+      message:
+        "Se ha enviado un email con las instrucciones para cambiar la contraseña",
+      emailSent: true,
+    };
+  }
+
+  async confirmPasswordChange(confirmData: ConfirmPasswordChangeDto) {
+    const user = await this.userRepository.findOne({
+      where: {
+        passwordResetToken: confirmData.token,
+        passwordResetExpires: MoreThan(new Date()),
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException("Token inválido o expirado");
+    }
+
+    // Hashear nueva contraseña
+    const hashedPassword = await bcrypt.hash(confirmData.newPassword, 10);
+
+    // Actualizar contraseña y limpiar token
+    user.password = hashedPassword;
+    user.passwordResetToken = null;
+    user.passwordResetExpires = null;
+    await this.userRepository.save(user);
+
+    return {
+      message: "Contraseña actualizada correctamente",
+      success: true,
+    };
   }
 }
