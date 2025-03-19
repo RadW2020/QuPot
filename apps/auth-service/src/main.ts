@@ -34,5 +34,11 @@ async function bootstrap() {
   SwaggerModule.setup("api/v1/docs", app, document);
 
   await app.listen(SERVICE_PORTS.AUTH_SERVICE);
+  console.log("🚀 Auth service running on port", SERVICE_PORTS.AUTH_SERVICE);
+  console.log(
+    "📚 Swagger documentation available at http://localhost:" +
+      SERVICE_PORTS.AUTH_SERVICE +
+      "/api/v1/docs"
+  );
 }
 bootstrap();
