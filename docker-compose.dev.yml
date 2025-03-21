@@ -93,7 +93,9 @@ services:
       - lottery
 
   quantum-service:
-    image: python:3.11-slim
+    build:
+      context: ./apps/quantum-service
+      dockerfile: Dockerfile
     ports:
       - "8002:8002"
       - "9232:9229"
@@ -105,10 +107,8 @@ services:
     volumes:
       - ./apps/quantum-service:/app/apps/quantum-service
       - ./packages:/app/packages
+      - quantum_venv:/usr/local/lib/python3.11/site-packages
     working_dir: /app/apps/quantum-service
-    command: >
-      sh -c "pip install -r requirements.txt &&
-             uvicorn src.main:app --host 0.0.0.0 --port 8002 --reload"
     profiles:
       - quantum
 
@@ -147,31 +147,33 @@ services:
       - blockchain
 
   api-gateway:
-    image: node:18
+    build:
+      context: .
+      dockerfile: apps/api-gateway/Dockerfile
     ports:
       - "8000:8000"
-      - "9228:9228"
+      - "9228:9229"
     environment:
-      - PORT=8000
       - NODE_ENV=development
+      - PORT=8000
       - AUTH_SERVICE_URL=http://auth-service:8001
       - LOTTERY_SERVICE_URL=http://lottery-service:8003
       - QUANTUM_SERVICE_URL=http://quantum-service:8002
       - BLOCKCHAIN_SERVICE_URL=http://blockchain-service:8004
+    volumes:
+      - ./apps/api-gateway:/app/apps/api-gateway
+      - ./packages:/app/packagess
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+      - api_gateway_node_modules:/app/node_modules
+      - api_gateway_app_node_modules:/app/apps/api-gateway/node_modules
+    networks:
+      - qupot-network
     depends_on:
       - auth-service
       - lottery-service
       - quantum-service
       - blockchain-service
-    networks:
-      - qupot-network
-    volumes:
-      - ./package.json:/app/package.json
-      - ./package-lock.json:/app/package-lock.json
-      - ./apps/api-gateway:/app/apps/api-gateway
-      - ./packages:/app/packages
-      - /app/node_modules
-      - /app/apps/api-gateway/node_modules
     working_dir: /app
     command: >
       sh -c "npm install &&
@@ -191,3 +193,6 @@ volumes:
   node_modules_lottery_service:
   node_modules_blockchain_service:
   node_modules_auth_service:
+  quantum_venv:
+  api_gateway_node_modules:
+  api_gateway_app_node_modules:

@@ -172,4 +172,13 @@ export class AuthService {
       );
     }
   }
+
+  async getWallet(userId: string): Promise<WalletResponse> {
+    const { data } = await firstValueFrom(
+      this.httpService.get<WalletResponse>(
+        `${this.authServiceUrl}/auth/wallet/${userId}`
+      )
+    );
+    return data;
+  }
 }

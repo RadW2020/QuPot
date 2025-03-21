@@ -1,34 +1,64 @@
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
+import { ValidationPipe } from "@nestjs/common";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { Logger } from "@nestjs/common";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  const logger = new Logger("Bootstrap");
+  const logger = new Logger("API Gateway");
 
-  // Enable CORS
-  app.enableCors();
+  try {
+    const app = await NestFactory.create(AppModule);
 
-  // Configure Swagger documentation
-  const config = new DocumentBuilder()
-    .setTitle("QuPot API Gateway")
-    .setDescription("API Gateway for the QuPot Quantum Lottery Platform")
-    .setVersion("1.0")
-    .addBearerAuth()
-    .build();
+    // Configuración de CORS
+    app.enableCors({
+      origin:
+        process.env.NODE_ENV === "production"
+          ? process.env.ALLOWED_ORIGINS?.split(",")
+          : "*",
+      methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+      credentials: true,
+    });
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup("api/docs", app, document);
+    // Configuración de validación global
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        transform: true,
+        forbidNonWhitelisted: true,
+        transformOptions: {
+          enableImplicitConversion: true,
+        },
+      })
+    );
 
-  // Start the server
-  const port = process.env.PORT || 8000;
-  await app.listen(port);
+    // Configuración de Swagger
+    const config = new DocumentBuilder()
+      .setTitle("QuPot API Gateway")
+      .setDescription("API Gateway para los servicios de QuPot")
+      .setVersion("1.0")
+      .addBearerAuth()
+      .addTag("auth", "Servicios de autenticación")
+      .addTag("lottery", "Servicios de lotería")
+      .addTag("quantum", "Servicios cuánticos")
+      .addTag("blockchain", "Servicios de blockchain")
+      .build();
 
-  logger.log(`🚀 API Gateway started on port ${port}`);
-  logger.log(
-    `📚 Swagger documentation available at http://localhost:${port}/api/docs`
-  );
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup("api/v1/docs", app, document);
+
+    // Start the server
+    const port = process.env.PORT || 8000;
+    await app.listen(port);
+
+    logger.log(`🚀 API Gateway iniciado en el puerto ${port}`);
+    logger.log(
+      `📚 Documentación Swagger disponible en http://localhost:${port}/api/v1/docs`
+    );
+  } catch (error) {
+    logger.error("Error al iniciar el API Gateway:", error);
+    process.exit(1);
+  }
 }
 
 bootstrap();

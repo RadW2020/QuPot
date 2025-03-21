@@ -6,6 +6,8 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Param,
+  Put,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import {
@@ -20,6 +22,7 @@ import { WalletDto } from "./dto/wallet.dto";
 import { RefreshTokenDto } from "./dto/refresh-token.dto";
 import { RequestPasswordChangeDto } from "./dto/request-password-change.dto";
 import { ConfirmPasswordChangeDto } from "./dto/confirm-password-change.dto";
+import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import {
   LoginResponse,
   RegisterResponse,
@@ -27,7 +30,7 @@ import {
   RefreshTokenResponse,
   RequestPasswordChangeResponse,
   ConfirmPasswordChangeResponse,
-} from "./interfaces/auth.interface";
+} from "./dto/responses";
 
 @ApiTags("Auth")
 @Controller("auth")
@@ -36,104 +39,78 @@ export class AuthController {
 
   @Post("login")
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "User login" })
+  @ApiOperation({ summary: "Iniciar sesión" })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: "Login successful.",
+    description: "Login exitoso",
     type: LoginResponse,
   })
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: "Invalid credentials.",
-  })
-  async login(@Body() credentials: LoginDto): Promise<LoginResponse> {
-    return this.authService.login(credentials);
+  async login(@Body() loginDto: LoginDto) {
+    return this.authService.login(loginDto);
   }
 
   @Post("register")
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: "User registration" })
+  @ApiOperation({ summary: "Registrar nuevo usuario" })
   @ApiResponse({
     status: HttpStatus.CREATED,
-    description: "User registered successfully.",
+    description: "Usuario registrado exitosamente",
     type: RegisterResponse,
   })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: "Invalid registration data.",
-  })
-  async register(@Body() userData: RegisterDto): Promise<RegisterResponse> {
-    return this.authService.register(userData);
+  async register(@Body() registerDto: RegisterDto) {
+    return this.authService.register(registerDto);
   }
 
-  @Post("connect-wallet")
-  @HttpCode(HttpStatus.OK)
+  @Get("wallet/:userId")
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Connect blockchain wallet" })
+  @ApiOperation({ summary: "Obtener wallet del usuario" })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: "Wallet connected successfully.",
+    description: "Wallet obtenida exitosamente",
     type: WalletResponse,
   })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: "Invalid wallet data.",
-  })
-  async connectWallet(@Body() walletData: WalletDto): Promise<WalletResponse> {
-    return this.authService.connectWallet(walletData);
+  async getWallet(@Param("userId") userId: string) {
+    return this.authService.getWallet(userId);
   }
 
-  @Post("refresh-token")
+  @Post("refresh")
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "Refresh access token" })
+  @ApiOperation({ summary: "Refrescar token de acceso" })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: "Token refreshed successfully.",
+    description: "Token refrescado exitosamente",
     type: RefreshTokenResponse,
   })
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: "Invalid or expired refresh token.",
-  })
-  async refreshToken(
-    @Body() refreshTokenData: RefreshTokenDto
-  ): Promise<RefreshTokenResponse> {
-    return this.authService.refreshToken(refreshTokenData);
+  async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
+    return this.authService.refreshToken(refreshTokenDto);
   }
 
-  @Post("request-password-change")
+  @Post("password/request-change")
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "Request password change" })
+  @ApiOperation({ summary: "Solicitar cambio de contraseña" })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: "Password change email sent successfully.",
+    description: "Solicitud de cambio de contraseña enviada",
     type: RequestPasswordChangeResponse,
   })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: "User not found.",
-  })
   async requestPasswordChange(
-    @Body() requestData: RequestPasswordChangeDto
-  ): Promise<RequestPasswordChangeResponse> {
-    return this.authService.requestPasswordChange(requestData);
+    @Body() requestPasswordChangeDto: RequestPasswordChangeDto
+  ) {
+    return this.authService.requestPasswordChange(requestPasswordChangeDto);
   }
 
-  @Post("confirm-password-change")
+  @Put("password/confirm-change")
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "Confirm password change" })
+  @ApiOperation({ summary: "Confirmar cambio de contraseña" })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: "Password changed successfully.",
+    description: "Contraseña cambiada exitosamente",
     type: ConfirmPasswordChangeResponse,
   })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: "Invalid or expired token.",
-  })
   async confirmPasswordChange(
-    @Body() confirmData: ConfirmPasswordChangeDto
-  ): Promise<ConfirmPasswordChangeResponse> {
-    return this.authService.confirmPasswordChange(confirmData);
+    @Body() confirmPasswordChangeDto: ConfirmPasswordChangeDto
+  ) {
+    return this.authService.confirmPasswordChange(confirmPasswordChangeDto);
   }
 }

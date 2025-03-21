@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY apps/quantum-service/requirements.txt ./
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
 COPY apps/quantum-service ./apps/quantum-service
 
